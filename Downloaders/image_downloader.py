@@ -1,80 +1,86 @@
-from mxproxy import mx
+import modulex as mx
 import hashlib
 import requests
 import os
 from PIL import Image
 
-SAVE_FOLDER_NAME='sabji_images/'
 
-def data_splitter(dataList,pieces):
-	dataparts=[]
-	for d in range(pieces):
-		step=int(len(dataList)/pieces)+1
-		subdata=dataList[d*step:(d+1)*step]
-		dataparts.append(subdata)
-	return dataparts
 
-def multi_thread(workfn,work,parallelism=4):
+# ------------------------------------
+def write_multi_thread(workfn,work,parallelism=4,waitfinish=0):
 	import threading
-	threadpool=[threading.Thread(target=workfn,args=(work[x],)) for x in range(parallelism)]
+	def data_splitter(dataList,pieces):
+		dataparts2D=[]
+		for d in range(pieces):
+			step=int(len(dataList)/pieces)+1
+			subdata=dataList[d*step:(d+1)*step]
+			dataparts2D.append(subdata)
+		return dataparts2D
+
+	work2D=data_splitter(work,4)
+	threadpool=[threading.Thread(target=workfn,args=(work2D[x],)) for x in range(parallelism)]
+	[x.start() for x in threadpool]
+	if not waitfinish:
+		[x.join() for x in threadpool]
+	print('trace1')
 	return threadpool
 
-def get_image_links(url,selector):
-	images=[]
-	for x in mx.get_page_soup(url).select(selector):
-		try:
-			images.append(x['src'])
-		except :
-			images.append(x['data-src'])
-	return images
 
-def write_images(urllist,dirname=SAVE_FOLDER_NAME):
+# ------------------------------------
+def write_images(urllist,dirname='./images/'):
 	mx.touch(dirname+'init.txt')
 	for x in urllist:
-		# x=x.split('?')[0]
 		filename=hashlib.md5(x.encode()).hexdigest()
-		writepath=f'./{dirname}{filename}'
-		if not os.path.exists(writepath):
+		filepath=f'./{dirname}{filename}'
+		print('writing',filepath)
+		if not os.path.exists(filepath):
 			print('downloading=>',x)
 			data=requests.get(x).content
 			try:
-				open(writepath,'wb').write(data)
-				print('writing=>',x,writepath)
+				open(filepath,'wb').write(data)
+				iformat=Image.open(filepath).format
+				os.rename(filepath,f'{filepath}.{iformat}')
+				print('writing=>',x,filepath)
 			except Exception as e:
-				print('failed',x)
+				print('failed',x,'because',e)
 
-def save_images_from_url(url):
-	write_images(SAVE_FOLDER_NAME,get_image_links(url,'picture img'))
+# ------------------------------------
+def select_images_from_page(url,selector,trimparams='true'):
+	images=set()
+	for x in mx.get_page_soup(url).select(selector):
 
+		for attrval in x.attrs.values():
+			if 'http' in attrval:
+				if trimparams:
+					attrval=attrval.split('?')[0]
+				images.add(attrval)
+	return list(images)
 
-
-def yandex_image_gatherer(markup):
-	resultPageSoup=mx.make_soup(markup)
-	results=resultPageSoup.select('.serp-item[data-bem]')
-	urls=[mx.jloads(x['data-bem'])['serp-item']['img_href'] for x in results]
+def get_urls_from_json(ajaxurl):
+	jobject=mx.jloads(mx.get_page(ajaxurl).text)
+	urls=[x['data']['media']['src'].split('?')[0] for x in jobject]
 	return urls
-
-if __name__ == '__main__':
-	url='https://yandex.com/images/search?text=nature'
+# ------------------------------------
+url='https://yandex.com/images/search?text=nature'
+def yandex_macro():
+	def yandex_image_gatherer(markup):#OFFLINE MODE FROM FILE MARKUP
+		resultPageSoup=mx.make_soup(markup)
+		results=resultPageSoup.select('.serp-item[data-bem]')
+		urls=[mx.jloads(x['data-bem'])['serp-item']['img_href'] for x in results]
+		return urls
 	markup=mx.fread('./rawData/yashresults1.html')
-	urls=yandex_image_gatherer(markup)
-	work=data_splitter(urls,4)
-	threadpool=multi_thread(write_images,work)
+	bigWorkList=yandex_image_gatherer(markup)
+	threadpool=write_multi_thread(write_images,bigWorkList)
 	[x.start() for x in threadpool];
 	[x.join() for x in threadpool];
 
-	# write_images(SAVE_FOLDER_NAME,urls)
+# ------------------------------------
+if __name__ == '__main__':
+	url='https://www.goodhousekeeping.com/life/g22521771/happy-quotes/'
+	ajaxurl='https://www.goodhousekeeping.com/ajax/contentmedia/?id=2988fa18-71f9-432f-a608-281221ae15f9'
+	selector='picture source'
+	imagelist=select_images_from_page(url,selector)
+	# imagelist=get_urls_from_json(ajaxurl)
+	write_multi_thread(write_images,imagelist)
+	# print(imagelist,len(imagelist))
 
-
-
-	def identify_format_and_rename(dirname):
-		for x in os.listdir(dirname):
-			x=dirname+x
-			try:
-				iformat=Image.open(x).format
-				os.rename(x,f'{x}.{iformat}')
-				
-			except Exception as e:
-				print('rename error for', x,e)
-
-	identify_format_and_rename(SAVE_FOLDER_NAME)

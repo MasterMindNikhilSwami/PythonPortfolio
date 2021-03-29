@@ -20,9 +20,9 @@ def hire_employer_to_download_list(work,workdata,employee_count):
 		time.sleep(0.5)
 
 def songDownload(url,name):
-	img_data = requests.get(url).content
+	reqdata = requests.get(url).content
 	with open(str(name)+'.mp3', 'wb') as handler:
-	    handler.write(img_data)
+	    handler.write(reqdata)
 	print('downloaded :'+url)
 
 def write_this(fname,content):

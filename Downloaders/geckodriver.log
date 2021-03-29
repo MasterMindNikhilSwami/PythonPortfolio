@@ -15,13 +15,16 @@ JavaScript warning: https://mc.yandex.ru/metrika/tag.js, line 113: Failed to cre
 console.log: WebExtensions: reset-default-search: No addons in our list are installed.
 JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
 JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
- "-no-remote" "-profile" "C:\\Users\\dell\\AppData\\Local\\Temp\\rust_mozprofileYyHEvb"
-console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
-1614279195924	Marionette	INFO	Listening on port 60135
-1614279196236	Marionette	WARN	TLS certificate errors will be ignored for this session
-1614279196250	Marionette	ERROR	[15] No reply from Marionette:Register
-console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
-JavaScript warning: https://yastatic.net/partner-code-bundles/13927/64f81789c650a095ad64.js, line 2: unreachable code after return statement
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+console.error: Region.jsm: "Error fetching region" (new TypeError("NetworkError when attempting to fetch resource.", ""))
+console.error: Region.jsm: "Failed to fetch region" (new Error("NO_RESULT", "resource://gre/modules/Region.jsm", 422))
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+95ad64.js, line 2: unreachable code after return statement
 console.log: WebExtensions: reset-default-search: No addons in our list are installed.
 1614280722365	Marionette	INFO	Stopped listening on port 60135
 
