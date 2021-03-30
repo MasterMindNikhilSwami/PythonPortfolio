@@ -2,7 +2,7 @@ import html5lib,requests,time,threading,selenium
 from selenium import webdriver
 from bs4 import BeautifulSoup as soup
 
-def hire_employer_to_download_list(work,workdata,employee_count):
+def hire_employer_to_download_list(workfn,workdata,employee_count):
 	workbench=[]
 	workslots=[workdata[i:i + employee_count] for i in range(0, len(workdata), employee_count)]
 	idx=0
@@ -11,7 +11,7 @@ def hire_employer_to_download_list(work,workdata,employee_count):
 	for slot in workslots:
 		for j in slot:
 			try:
-				workbench.append( threading.Thread( target=work, args=(j,nameStringBinderList[idx]) ) )
+				workbench.append( threading.Thread( target=workfn, args=(j,nameStringBinderList[idx]) ) )
 				workbench[idx].start()
 				# workbench[idx].join()
 				idx+=1

@@ -7,15 +7,16 @@ from PIL import Image
 
 
 # ------------------------------------
+def data_splitter(dataList,pieces):
+	dataparts2D=[]
+	for d in range(pieces):
+		step=int(len(dataList)/pieces)+1
+		subdata=dataList[d*step:(d+1)*step]
+		dataparts2D.append(subdata)
+	return dataparts2D
+
 def write_multi_thread(workfn,work,parallelism=4,waitfinish=0):
 	import threading
-	def data_splitter(dataList,pieces):
-		dataparts2D=[]
-		for d in range(pieces):
-			step=int(len(dataList)/pieces)+1
-			subdata=dataList[d*step:(d+1)*step]
-			dataparts2D.append(subdata)
-		return dataparts2D
 
 	work2D=data_splitter(work,4)
 	threadpool=[threading.Thread(target=workfn,args=(work2D[x],)) for x in range(parallelism)]
@@ -24,7 +25,6 @@ def write_multi_thread(workfn,work,parallelism=4,waitfinish=0):
 		[x.join() for x in threadpool]
 	print('trace1')
 	return threadpool
-
 
 # ------------------------------------
 def write_images(urllist,dirname='./images/'):
