@@ -34,4 +34,6 @@ def generate_syllabus_index(url,separator=','):
 		# print(p.contents)
 	open(outfilename+'.html','w').write(str(maincontent))
 url='http://www.jnu.ac.in/se-cse-syllabus'
-generate_syllabus_index(url)
+
+for x in range(5):
+	generate_syllabus_index(url)

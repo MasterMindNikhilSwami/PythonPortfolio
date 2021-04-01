@@ -5,30 +5,48 @@
 
 import os
 from PIL import Image
+import multiprocessing
 
+
+WORKING_DIR='C:\\Users\\dell\\Downloads\\Screenshots\\Screenshots'
+os.chdir(WORKING_DIR)
 if not os.path.exists('compressed'): os.makedirs('compressed')
 
-def resize1200(currentsize):
-	# preserves aspect ratio
-	x,y= currentsize
-	if x>1200:
-		y= int(y*(1200/x))
-		x=1200
-	return x,y
 
-def const_crop(sizetupleXY,factor=0.8):
+def custom_resize(sizetupleXY,factor=0.8):
 	x,y=sizetupleXY
 	x=int(x*factor) 
 	y=int(y*factor) 
 	# if 
 	return (x,y)
 
-# print(const_crop((100,200),0.8))
-
-JPG_PNG_LIST=[x for x in os.listdir() if 'png' in x or 'jpg' in x or 'jpeg' in x or 'webp' in x]
-for x in JPG_PNG_LIST:
+def compress_file(imgpath,savings):
+	# savings.value+=1
+	# for x in imgpathlist:
+	x=imgpath
+	size=os.path.getsize(x)
 	currentImg=Image.open(x).convert('RGB')
-	currentImg=currentImg.resize(const_crop(currentImg.size,factor=0.6),Image.ANTIALIAS)
-	currentImg=currentImg.save('./compressed/'+x,quality=75,optimize=True)
-print("these files were compressed",JPG_PNG_LIST)
+	currentImg=currentImg.resize(custom_resize(currentImg.size,factor=1))
+	savingName=x.split('.')[0]+'.jpg'
+	currentImg=currentImg.save(f'./compressed/{savingName}',quality=80,optimize=False)
+	sizeDifference=size - os.path.getsize(f'./compressed/{savingName}')
+	savings.value+=sizeDifference
+	print('net savings :: ',savings.value/1_000_000,'MB')
 
+
+if __name__ == '__main__':
+	JPG_PNG_LIST=[x for x in os.listdir() if 'png' in x or 'jpg' in x or 'jpeg' in x or 'webp' in x][:300]
+
+	POOL=multiprocessing.Pool(4)
+	savings=multiprocessing.Manager().Value('i',0,lock=True)
+	result=[POOL.apply(compress_file,(file,savings)) for file in JPG_PNG_LIST ]
+	[x.get() for x in result]
+
+
+
+
+
+
+
+
+	# singleThead=[compress_file(x,savings) for x in JPG_PNG_LIST]
